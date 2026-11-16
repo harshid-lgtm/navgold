@@ -1,0 +1,13 @@
+# Unreferenced duplicate of blog/ kept on disk, not published
+blog - Copy/
+
+# Leftover GitHub Pages template config (unused; site is plain static HTML)
+-config.yml
+
+# OS cruft
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Backup folders made by prep script
+*.backup-*/
