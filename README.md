@@ -6,7 +6,7 @@ The Navgold website: static HTML, CSS and JavaScript with no build step.
 
 Published with GitHub Pages from the `main` branch (root folder):
 
-https://harshid-lgtm.github.io/navgold/
+https://navgold.com/
 
 ## Structure
 
