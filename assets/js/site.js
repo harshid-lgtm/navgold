@@ -251,11 +251,30 @@
   });
 
   /* ----------------------------------------------------------------- forms */
-  /* Static build: forms compose a mailto: instead of posting to a server.
-     Replace the mailto hand-off with a fetch() to your own endpoint if you
-     want submissions delivered server-side. */
+  /* Forms post to the endpoint in data-endpoint so enquiries are actually
+     delivered. If the request fails (or no endpoint is configured), fall back
+     to composing a mailto: in the visitor's email app. */
   [].slice.call(doc.querySelectorAll('[data-form]')).forEach(function (form) {
     var status = form.querySelector('[data-form-status]');
+    var endpoint = form.getAttribute('data-endpoint');
+    var submitBtn = form.querySelector('button[type="submit"], button:not([type])');
+
+    function setStatus(text, state) {
+      if (!status) return;
+      status.textContent = text;
+      status.className = 'form__status' + (state ? ' is-' + state : '');
+    }
+
+    function mailtoFallback(kind, lines, subject) {
+      var href = 'mailto:support@superfooduk.com' +
+                 '?subject=' + encodeURIComponent(subject) +
+                 '&body=' + encodeURIComponent(lines.join('\n'));
+      setStatus(kind === 'audit'
+        ? 'Opening your email app — your audit request is ready to send. If nothing opens, email support@superfooduk.com.'
+        : 'Opening your email app — your message is ready to send. If nothing opens, email support@superfooduk.com.', 'ok');
+      window.location.href = href;
+    }
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var honey = form.querySelector('input[name="websiteUrl"]');
@@ -269,30 +288,50 @@
         if (!valid) bad.push(input);
       });
       if (bad.length) {
-        if (status) {
-          status.textContent = 'Please complete the highlighted fields.';
-          status.className = 'form__status is-err';
-        }
+        setStatus('Please complete the highlighted fields.', 'err');
         bad[0].focus();
         return;
       }
       var kind = form.getAttribute('data-form');
-      var to = 'support@superfooduk.com';
-      var lines = ['Hello Navgold Ltd,', ''];
       var subject = kind === 'audit' ? 'Free Amazon audit request' : 'Website enquiry';
+      var lines = ['Hello Navgold Ltd,', ''];
+      var data = {};
       [].slice.call(form.querySelectorAll('input:not([name="websiteUrl"]), select, textarea')).forEach(function (field) {
         if (!field.name || !field.value) return;
         lines.push(field.name.replace(/([A-Z])/g, ' $1').replace(/^./, function (c) { return c.toUpperCase(); }) + ': ' + field.value);
+        data[field.name] = field.value;
       });
-      var href = 'mailto:' + to + '?subject=' + encodeURIComponent(subject) +
-                 '&body=' + encodeURIComponent(lines.join('\n'));
-      if (status) {
-        status.textContent = kind === 'audit'
-          ? 'Opening your email app — your audit request is ready to send.'
-          : 'Opening your email app — your message is ready to send.';
-        status.className = 'form__status is-ok';
-      }
-      window.location.href = href;
+
+      if (!endpoint) { mailtoFallback(kind, lines, subject); return; }
+
+      data._subject = subject;
+      data._template = 'table';
+      data._captcha = 'false';
+      if (submitBtn) submitBtn.disabled = true;
+      setStatus('Sending your message…', '');
+
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (body) {
+          return { ok: res.ok, body: body };
+        });
+      }).then(function (result) {
+        if (!result.ok) throw new Error('endpoint error');
+        var message = String(result.body.message || '');
+        if (/activat/i.test(message)) {
+          setStatus('Thank you — your message has been received. If it is urgent today, please email support@superfooduk.com.', 'ok');
+        } else {
+          setStatus('Thank you — your message has been sent. We usually reply within 24 hours.', 'ok');
+        }
+        form.reset();
+      }).catch(function () {
+        mailtoFallback(kind, lines, subject);
+      }).then(function () {
+        if (submitBtn) submitBtn.disabled = false;
+      });
     });
   });
 })();
