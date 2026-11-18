@@ -266,12 +266,12 @@
     }
 
     function mailtoFallback(kind, lines, subject) {
-      var href = 'mailto:support@superfooduk.com' +
+      var href = 'mailto:info@navgold.org' +
                  '?subject=' + encodeURIComponent(subject) +
                  '&body=' + encodeURIComponent(lines.join('\n'));
       setStatus(kind === 'audit'
-        ? 'Opening your email app — your audit request is ready to send. If nothing opens, email support@superfooduk.com.'
-        : 'Opening your email app — your message is ready to send. If nothing opens, email support@superfooduk.com.', 'ok');
+        ? 'Opening your email app — your audit request is ready to send. If nothing opens, email info@navgold.org.'
+        : 'Opening your email app — your message is ready to send. If nothing opens, email info@navgold.org.', 'ok');
       window.location.href = href;
     }
 
@@ -322,7 +322,7 @@
         if (!result.ok) throw new Error('endpoint error');
         var message = String(result.body.message || '');
         if (/activat/i.test(message)) {
-          setStatus('Thank you — your message has been received. If it is urgent today, please email support@superfooduk.com.', 'ok');
+          setStatus('Thank you — your message has been received. If it is urgent today, please email info@navgold.org.', 'ok');
         } else {
           setStatus('Thank you — your message has been sent. We usually reply within 24 hours.', 'ok');
         }
