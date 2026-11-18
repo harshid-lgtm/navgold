@@ -1,4 +1,4 @@
 User-Agent: *
 Allow: /
 
-Sitemap: https://navgold.com/sitemap.xml
+Sitemap: https://navgold.org/sitemap.xml

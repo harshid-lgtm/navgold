@@ -4,9 +4,9 @@ The Navgold website: static HTML, CSS and JavaScript with no build step.
 
 ## Live site
 
-Published with GitHub Pages from the `main` branch (root folder):
+Deployed as plain static files (originally published with GitHub Pages from `main`):
 
-https://navgold.com/
+https://navgold.org/
 
 ## Structure
 
